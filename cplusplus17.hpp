@@ -6,6 +6,7 @@
 #include <optional>
 #include <variant>
 #include <any>
+#include <future>
 
 template <auto value>
 constexpr auto constant = value;
@@ -206,6 +207,27 @@ public:
     void testUtf8() {
     }
 
+    void testPromise() {
+        std::promise<std::string> promise;
+        auto future = promise.get_future();
+        std::thread thread([&future]() {
+            std::cout << future.get() << std::endl;
+        });
+        thread.detach();
+
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        promise.set_value("I come from future");
+    }
+
+    void testAsync() {
+        auto f1 = std::async(std::launch::async, []() {
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            std::cout << "666" << std::endl;
+        });
+        f1.wait_for(std::chrono::seconds(1));
+        std::cout << "end" << std::endl;
+    }
+
     void run() {
 //        testOption();
 //        testVariant();
@@ -224,5 +246,7 @@ public:
 //        testStructureBinding();
 //        testConstexprIf();
 //        testUtf8();
+//        testPromise();
+//        testAsync();
     }
 };
